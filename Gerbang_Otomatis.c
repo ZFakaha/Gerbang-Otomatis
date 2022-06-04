@@ -6,104 +6,80 @@ http://www.hpinfotech.ro
 
 Project : 
 Version : 
-Date    : 01/06/2022
+Date    : 20/04/2022
 Author  : 
 Company : 
 Comments: 
 
 
-Chip type               : ATmega32
+Chip type               : ATmega16
 Program type            : Application
 AVR Core Clock frequency: 12,000000 MHz
 Memory model            : Small
 External RAM size       : 0
-Data Stack size         : 512
+Data Stack size         : 256
 *******************************************************/
 
 // I/O Registers definitions
-#include <mega32.h>
+#include <mega16.h>
 #include <delay.h>
+#include <stdlib.h>
+
+//alphanumeric lcd module function
+#include <alcd.h>
 
 // Declare your global variables here
-int i;
-
-void inisiasi(void){
-DDRD=0xff;
-}
-
-void nadaA(void){
-for(i = 0; i < 440; i++){
-PORTD.7 = 0;
-delay_us(1136);
-PORTD.7 = 1;
-delay_us(1136);
+int count;
+char buff[10];
+unsigned char jarak;
+unsigned char jrk;
+unsigned char sensor_jarak(){
+    count = 0;
+    PORTB.6 = 1;
+    delay_us(15);
+    PORTB.6 = 0;
+    delay_us(2);
+    while(PINB.7 == 0){}
+    while(PINB.7 == 1){
+    count++;
     }
+ jrk = count * 0.05/2;
+ return jrk;   
 }
 
-void nadaB(void){
-for(i = 0; i < 493; i++){
-PORTD.7 = 0;
-delay_us(1014);
-PORTD.7 = 1;
-delay_us(1014);
-    }
+void main(void)
+{
+       DDRB = 0x00;
+       PORTB = 0xC0;
+       DDRC = 0xFF;
+       PORTC = 0x03;
+       lcd_init(16);
+
+while (1)
+      {
+      // Place your code here
+      jarak = sensor_jarak();
+      lcd_clear();
+      lcd_gotoxy(0,0);
+      lcd_putsf("GERBANG OTOMATIS");
+      lcd_gotoxy(0,1);
+      lcd_putsf("JARAK : ");
+      itoa(jarak, buff);
+      lcd_gotoxy(9,1);  
+      lcd_puts (buff);
+      lcd_gotoxy(13,1);
+      lcd_putsf("Cm");
+      delay_ms(200);
+      if(jarak <= 150){
+      PORTC.0 = 1;
+      PORTC.1 = 0;
+      }else if(jarak > 150){
+      PORTC.0 = 0;
+      PORTC.1 = 1;
+      }else{
+      PORTC.0 = 0;
+      PORTC.1 = 0;
+      lcd_clear();
+      }
 }
-
-void nadaC(void){
-for(i = 0; i < 523; i++){
-PORTD.7 = 0;
-delay_us(956);
-PORTD.7 = 1;
-delay_us(956);
-    }
-}
-
-void nadaD(void){
-for(i = 0; i < 587; i++){
-PORTD.7 = 0;
-delay_us(852);
-PORTD.7 = 1;
-delay_us(852);
-    }
-}
-
-void nadaE(void){
-for(i = 0; i < 659; i++){
-PORTD.7 = 0;
-delay_us(759);
-PORTD.7 = 1;
-delay_us(759);
-    }
-}
-
-void nadaF(void){
-for(i = 0; i < 698; i++){
-PORTD.7 = 0;
-delay_us(716);
-PORTD.7 = 1;
-delay_us(716);
-    }
-}
-
-void nadaG(void){
-for(i = 0; i < 783; i++){
-PORTD.7 = 0;
-delay_us(639);
-PORTD.7 = 1;
-delay_us(639);
-    }
-}
-
-
-void main(void){
- DDRD = 0x80;
- 
-inisiasi();
-nadaA();
-nadaB();
-nadaC();
-nadaD();
-nadaE();
-nadaF();
-nadaG();
 }
